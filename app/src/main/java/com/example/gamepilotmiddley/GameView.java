@@ -6,10 +6,10 @@ import android.graphics.Paint;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
 
-public class GameView extends SurfaceView implements Runnable{
+public class GameView extends SurfaceView implements Runnable {
 
     // поля
-    private  Thread thread; // поле нового потока
+    private Thread thread; // поле нового потока
     private boolean isPlaying; // поле запуска и приостановления игры
     private Background background1, background2; // поля работы с фоном (необходимо два, что было непрерывное движение фона)
     private int screenX, screenY; // поля размеров экрана по осям X и Y
@@ -52,10 +52,10 @@ public class GameView extends SurfaceView implements Runnable{
     }
 
     // метод обновления потока
-    private void update() {
+        private void update() {
         // сдвиг фона по оси X на 10 пикселей и преобразование для совместимости разных экранов
-        background1.setX(background1.getX() - (int)(10 * screenRatioX));
-        background2.setX(background2.getX() - (int)(10 * screenRatioX));
+        background1.setX(background1.getX() - (int) (10 * screenRatioX));
+        background2.setX(background2.getX() - (int) (10 * screenRatioX));
 
         if ((background1.getX() + background1.getBackground().getWidth()) <= 0) { // если фон 1 полностью исчез с экрана
             background1.setX(screenX); // то обновление x до размера ширины фона
@@ -66,100 +66,109 @@ public class GameView extends SurfaceView implements Runnable{
 
         // задание скорости подъёма и снижения самолёта
         if (flight.isGoingUp()) { // условие подъёма
-            flight.setY(flight.getY() - (int)(30 * screenRatioY));
+            flight.setY(flight.getY() - (int) (30 * screenRatioY));
         } else { // условие снижения
-            flight.setY(flight.getY() + (int)(30 * screenRatioY));
+            flight.setY(flight.getY() + (int) (30 * screenRatioY));
         }
         // задание порога значений местоположения самолёта
         if (flight.getY() < 0) { // запрет на снижение меньше нуля
             flight.setY(0);
         } else if (flight.getY() >= screenY - flight.getHeight()) { // запрет на подъём выше экрана за минусом высоты самолёта
             flight.setY(screenY - flight.getHeight());
+        } else if (flight.getY() == (screenY / 2)) { // запрет на подъём или снижение выше/ниже середины экрана когда самолёт поднимется/опустится в эту точку
+            flight.setY(screenY / 2);
         }
     }
+
     // метод рисования в потоке
-    private void draw() {
+    private void draw () {
 
-        if (getHolder().getSurface().isValid()) { // проверка валидности объекта surface
+            if (getHolder().getSurface().isValid()) { // проверка валидности объекта surface
 
-            Canvas canvas = getHolder().lockCanvas(); // метод lockCanvas() возвращает объект Canvas (холст для рисования)
-            // метод drawBitmap() рисует растровое изображение фона на холсте (изображение, координаты X и Y, стиль для рисования)
-            canvas.drawBitmap(background1.getBackground(), background1.getX(), background1.getY(), paint);
-            canvas.drawBitmap(background2.getBackground(), background2.getX(), background2.getY(), paint);
+                Canvas canvas = getHolder().lockCanvas(); // метод lockCanvas() возвращает объект Canvas (холст для рисования)
+                // метод drawBitmap() рисует растровое изображение фона на холсте (изображение, координаты X и Y, стиль для рисования)
+                canvas.drawBitmap(background1.getBackground(), background1.getX(), background1.getY(), paint);
+                canvas.drawBitmap(background2.getBackground(), background2.getX(), background2.getY(), paint);
 
-            // отрисовка растрового изображения самолёта
-            canvas.drawBitmap(flight.getFlight(), flight.getX(), flight.getY(), paint);
+                // отрисовка растрового изображения самолёта
+                canvas.drawBitmap(flight.getFlight(), flight.getX(), flight.getY(), paint);
 
-            // вывод нарисованных изображений на экран
-            getHolder().unlockCanvasAndPost(canvas);
-        }
+                // вывод нарисованных изображений на экран
+                getHolder().unlockCanvasAndPost(canvas);
+            }
     }
+
     // метод засыпания потока
-    private void sleep() {
-        try {
-            // засыпание потока на 16 милисекунд
-            Thread.sleep(16);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+    private void sleep () {
+            try {
+                // засыпание потока на 16 милисекунд
+                Thread.sleep(16);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
     }
 
 
     // метод запуска потока
-    public void resumeThread() {
-        // установление флага запуска игры
-        isPlaying = true;
-        // создание объекта потока
-        thread = new Thread(this);
-        // запуск потока
-        thread.start();
+    public void resumeThread () {
+            // установление флага запуска игры
+            isPlaying = true;
+            // создание объекта потока
+            thread = new Thread(this);
+            // запуск потока
+            thread.start();
     }
 
     // метод паузы потока
-    public void pauseThread() {
-        try {
-            // установление флага приостановления игры
-            isPlaying = false;
-            // приостановление потока
-            thread.join();
-            /**
-             * метод join() — используется для того,
-             * чтобы приостановить выполнение текущего потока до тех пор,
-             * пока другой поток не закончит свое выполнение
-             */
-        } catch (InterruptedException e) { // исключение на случай зависания потока
-            e.printStackTrace();
-        }
+    public void pauseThread () {
+            try {
+                // установление флага приостановления игры
+                isPlaying = false;
+                // приостановление потока
+                thread.join();
+                /**
+                 * метод join() — используется для того,
+                 * чтобы приостановить выполнение текущего потока до тех пор,
+                 * пока другой поток не закончит свое выполнение
+                 */
+            } catch (InterruptedException e) { // исключение на случай зависания потока
+                e.printStackTrace();
+            }
     }
     // метод обработки касания экрана (для управления самолётом)
     @Override
-    public boolean onTouchEvent(MotionEvent event) {
+    public boolean onTouchEvent (MotionEvent event){
 
-        // обработка событий касания экрана
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN: // нажатие
-                // если пользователь нажал на левую сторону экрана
-                if (event.getX() < (screenX / 2)) {
-                    // то движение самолёта вверх
-                    flight.setGoingUp(true);
-                    // если пользователь нажал на правую сторону экрана
-                } else if (event.getX() >= (screenX / 2)){
-                    // то самолет должен встать в начальную точку
-                    flight.setY(screenY/2);
-                    flight.setX(screenX/21);
-                }
-                break;
-            case MotionEvent.ACTION_MOVE: // движение по экрану
+            // обработка событий касания экрана
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN: // нажатие
+                    // если пользователь нажал на левую верхнюю сторону экрана
+                    if (event.getX() < (screenX / 2) && event.getY() >= (screenY / 2)) {
+                        // то движение самолёта вверх
+                        flight.setGoingUp(true);
+                        // если пользователь нажал на левую нижнюю сторону экрана
+                    } else if (event.getX() < (screenX / 2) && event.getY() <= (screenY / 2)) {
+                        // то самолет должен опускаться
+                        flight.setGoingUp(false);
+                    }
+                    break;
+                case MotionEvent.ACTION_MOVE: // движение по экрану
 
-                break;
-            case MotionEvent.ACTION_UP: // отпускание
-                // при отпускании экрана самолёт начнёт снижаться
-                flight.setGoingUp(false);
-                break;
-        }
-
-        return true; // активация обработки касания экрана
+                    break;
+                case MotionEvent.ACTION_UP: // отпускание
+                    // если пользователь отпустил на левой верхней стороне экрана
+                    if (event.getX() < (screenX / 2) && event.getY() >= (screenY / 2)) {
+                        // то движение самолёта вниз
+                        flight.setGoingUp(false);
+                        // если пользователь отпустил на левой нижней стороне экрана
+                    } else if (event.getX() < (screenX / 2) && event.getY() <= (screenY / 2)) {
+                        // то самолет должен подниматься
+                        flight.setGoingUp(true);
+                        break;
+                    }
+            }
+            return true; // активация обработки касания экрана
     }
-
-
 }
+
+
